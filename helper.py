@@ -50,16 +50,6 @@ def extract_text_from_resume(file) -> str:
 
     return ""
 
-def parse_resume(text: str) -> dict:
-    # Simulated parser for demo purposes
-    return {
-        "education": ["B.Sc. in Computer Science"],
-        "experience": ["3 years at TechCorp"],
-        "skills": ["Python", "FastAPI", "ML"],
-        "certifications": ["AWS Certified"],
-        "projects": ["AI recruiting tool"]
-    }
-
 def compare_profile_to_jd(profile: dict, jd_summary: str) -> tuple:
     skills_match = list(set(profile["skills"]).intersection(set(["Python", "ML", "FastAPI"])))
     matrix = {

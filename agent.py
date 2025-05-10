@@ -1,11 +1,12 @@
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
-from helper import extract_text_from_resume, parse_resume, search_candidate_web, compare_profile_to_jd
+from helper import extract_text_from_resume, search_candidate_web, compare_profile_to_jd
 from schemas import FitResult, CandidateProfile
 import os
 from dotenv import load_dotenv
 from typing import TypedDict, Any
 import json
+import re
 
 # Load environment variables
 load_dotenv()
@@ -21,27 +22,51 @@ def search_node(state):
 def resume_node(state):
     resume_file = state['resume_file']
     text = extract_text_from_resume(resume_file)
-    prompt = """
+    print(text)
+    prompt = f"""
     Parses and analyzes the candidate resume mentioned below:\n
-    Resume Content: {text}\n
-    Return the experience, required skills and required qualifications as JSON format like : { name: 'abc', email: 'abc@gmail.com', phone: '99898393', experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'], certifications: ['a', 'b'], publications: ['a', 'b'], projects: ['a', 'b'] }
-    if Not matched then return as empty JSON format like : { name: '', email: '', phone: '', experience: '', skills: [], qualifications: [], certifications: [], publications: [], projects: [] }
+    Resume Content:
+    {text}\n
+    Return the experience, required skills and required qualifications as JSON format like : {{ name: 'abc', email: 'abc@gmail.com', phone: '99898393', experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'], certifications: ['a', 'b'], publications: ['a', 'b'], projects: ['a', 'b'] }}
+    if Not matched then return as empty JSON format like : {{ name: '', email: '', phone: '', experience: '', skills: [], qualifications: [], certifications: [], publications: [], projects: [] }}
     """
-    data = llm.invoke(prompt)
-    resume_data = json.loads(data.content)
-    return {"resume_data": resume_data}
+    content = llm.invoke(prompt).content  # the response from the model
+    # Try to extract the JSON block using regex
+    match = re.search(r"\{.*\}", content, re.DOTALL)
+    if match:
+        try:
+            resume_data = json.loads(match.group())
+            print("Parsed JSON:", resume_data)
+            return {"resume_data": resume_data}
+        except json.JSONDecodeError as e:
+            print("JSON decode error:", e)
+            return {"resume_data": {}}
+    else:
+        print("No JSON object found in the response.")
+        return {"resume_data": {}}
 
 def jd_node(state):
     jd = state['job_description']
-    prompt = """
+    prompt = f"""
     Summarize and extract core requirements from this job description:\n
     Job Description:{jd}\n
-    Return the experience, required skills and required qualifications as JSON format like : { experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'] }
-    if Not matched then return as empty JSON format like :  { experience: 'x', skills: [], qualifications: [] }
+    Return the experience, required skills and required qualifications as JSON format like : {{ experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'] }}
+    if Not matched then return as empty JSON format like :  {{ experience: 'x', skills: [], qualifications: [] }}
     """
-    summary = llm.invoke(prompt)
-    jd_summary = json.loads(summary.content)
-    return {"jd_summary": jd_summary}
+    summary = llm.invoke(prompt).content  # the response from the model
+    # Try to extract the JSON block using regex
+    match = re.search(r"\{.*\}", summary, re.DOTALL)
+    if match:
+        try:
+            jd_summary = json.loads(match.group())
+            print("Parsed JSON:", jd_summary)
+            return {"jd_summary": jd_summary}
+        except json.JSONDecodeError as e:
+            print("JSON decode error:", e)
+            return {"jd_summary": {}}
+    else:
+        print("No JSON object found in the response.")
+        return {"jd_summary": {}}
 
 def compare_node(state):
     resume_data = state['resume_data']
@@ -94,10 +119,11 @@ async def run_agent(candidate_name, resume_file, job_description):
         "web_links": result.get("web_data", {})
     }
     profile = CandidateProfile(**profile_data)
-    output = FitResult(
-        fit_score=result["fit_score"],
-        profile=profile,
-        comparison_matrix=result["comparison_matrix"],
-        explanation=result["explanation"]
-    )
-    return output.dict()
+    # output = FitResult(
+    #     fit_score=result["fit_score"],
+    #     profile=profile,
+    #     comparison_matrix=result["comparison_matrix"],
+    #     explanation=result["explanation"]
+    # )
+    # return output.dict()
+    return profile_data
