@@ -1,7 +1,6 @@
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
 from helper import extract_text_from_resume, search_candidate_web, compare_profile_to_jd
-from schemas import FitResult, CandidateProfile
 import os
 from dotenv import load_dotenv
 from typing import TypedDict, Any
@@ -22,7 +21,6 @@ def search_node(state):
 def resume_node(state):
     resume_file = state['resume_file']
     text = extract_text_from_resume(resume_file)
-    print(text)
     prompt = f"""
     Parses and analyzes the candidate resume mentioned below:\n
     Resume Content:
@@ -30,8 +28,9 @@ def resume_node(state):
     Return the experience, required skills and required qualifications as JSON format like : {{ name: 'abc', email: 'abc@gmail.com', phone: '99898393', experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'], certifications: ['a', 'b'], publications: ['a', 'b'], projects: ['a', 'b'] }}
     if Not matched then return as empty JSON format like : {{ name: '', email: '', phone: '', experience: '', skills: [], qualifications: [], certifications: [], publications: [], projects: [] }}
     """
-    content = llm.invoke(prompt).content  # the response from the model
-    # Try to extract the JSON block using regex
+    # dummyJSON = {'name': 'Niketan', 'email': 'niketan.test@gmail.com', 'phone': '+91240343093', 'experience': 'Over 8+ years of experience with JavaScript, Node.js, MongoDB, Express.js, Nest.js, TypeScript, ES6, React.js and Redux, jQuery, MySQL, Ajax, Socket.IO, Redis. Experienced in developing large Application. Experienced in implementing Payment system using Stripe. Experienced in writing complex database queries.', 'skills': ['JavaScript', 'Node.js', 'MongoDB', 'Express.js', 'Nest.js', 'TypeScript', 'ES6', 'React.js and Redux', 'jQuery', 'MySQL', 'Ajax', 'Socket.IO', 'Redis', 'Python', 'FastAPI', 'Generative AI'], 'qualifications': ['MCA from Sikkim Manipal University (January, 2014)'], 'certifications': [], 'publications': [], 'projects': []}
+    # return {"resume_data": dummyJSON}
+    content = llm.invoke(prompt).content
     match = re.search(r"\{.*\}", content, re.DOTALL)
     if match:
         try:
@@ -53,8 +52,9 @@ def jd_node(state):
     Return the experience, required skills and required qualifications as JSON format like : {{ experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'] }}
     if Not matched then return as empty JSON format like :  {{ experience: 'x', skills: [], qualifications: [] }}
     """
-    summary = llm.invoke(prompt).content  # the response from the model
-    # Try to extract the JSON block using regex
+    # dummyJSON = {'experience': '5 years', 'skills': ['JavaScript', 'Python', 'AI', 'Generative AI', 'MySQL'], 'qualifications': ['B.Tech', 'MCA']}
+    # return {"jd_summary": dummyJSON}
+    summary = llm.invoke(prompt).content
     match = re.search(r"\{.*\}", summary, re.DOTALL)
     if match:
         try:
@@ -118,12 +118,10 @@ async def run_agent(candidate_name, resume_file, job_description):
         **result.get("resume_data", {}),
         "web_links": result.get("web_data", {})
     }
-    profile = CandidateProfile(**profile_data)
-    # output = FitResult(
-    #     fit_score=result["fit_score"],
-    #     profile=profile,
-    #     comparison_matrix=result["comparison_matrix"],
-    #     explanation=result["explanation"]
-    # )
-    # return output.dict()
-    return profile_data
+    return {
+        "profile": profile_data,
+        "fit_score": result["fit_score"],
+        "comparison_matrix": result["comparison_matrix"],
+        "explanation": result["explanation"]
+        
+    }
