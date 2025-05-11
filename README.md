@@ -19,6 +19,7 @@ Make sure you have Python 3.13 or later installed.
 ### 1. Clone the repository
 
 git clone https://github.com/iamtalibaziz/python-fastapi-langgraph-recruiting-assistant.git
+<br>
 cd python-fastapi-langgraph-recruiting-assistant
 
 ### 2. Create a virtual environment
@@ -26,6 +27,7 @@ cd python-fastapi-langgraph-recruiting-assistant
 python -m venv venv
 
 source venv/bin/activate    # For Linux/macOS
+<br>
 venv\Scripts\activate       # For Windows
 
 ### 3. Install dependencies
@@ -37,8 +39,9 @@ pip install -r requirements.txt
 Copy the example environment file and rename it to .env:
 
 cp .env.example .env  # For Linux/macOS
+<br>
 copy .env.example .env  # For Windows
-
+<br>
 Open .env and update the values as needed (e.g., OPENAI_API_KEY, etc.).
 
 
@@ -47,6 +50,7 @@ uvicorn app.main:app --reload
 
 
 Access the app at: http://127.0.0.1:8000
+<br>
 Swagger UI: http://127.0.0.1:8000/docs
 
 
