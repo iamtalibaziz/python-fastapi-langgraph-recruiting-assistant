@@ -24,9 +24,12 @@ cd python-fastapi-langgraph-recruiting-assistant
 ### 2. Create a virtual environment
 
 python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+
+source venv/bin/activate    # For Linux/macOS
+venv\Scripts\activate       # For Windows
 
 ### 3. Install dependencies
+
 pip install -r requirements.txt
 
 ### 4. Environment Variables
@@ -34,7 +37,6 @@ pip install -r requirements.txt
 Copy the example environment file and rename it to .env:
 
 cp .env.example .env  # For Linux/macOS
-# OR
 copy .env.example .env  # For Windows
 
 Open .env and update the values as needed (e.g., OPENAI_API_KEY, etc.).
