@@ -28,8 +28,8 @@ def resume_node(state):
     Return the experience, required skills and required qualifications as JSON format like : {{ name: 'abc', email: 'abc@gmail.com', phone: '99898393', experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'], certifications: ['a', 'b'], publications: ['a', 'b'], projects: ['a', 'b'] }}
     if Not matched then return as empty JSON format like : {{ name: '', email: '', phone: '', experience: '', skills: [], qualifications: [], certifications: [], publications: [], projects: [] }}
     """
-    # dummyJSON = {'name': 'Niketan', 'email': 'niketan.test@gmail.com', 'phone': '+91240343093', 'experience': 'Over 8+ years of experience with JavaScript, Node.js, MongoDB, Express.js, Nest.js, TypeScript, ES6, React.js and Redux, jQuery, MySQL, Ajax, Socket.IO, Redis. Experienced in developing large Application. Experienced in implementing Payment system using Stripe. Experienced in writing complex database queries.', 'skills': ['JavaScript', 'Node.js', 'MongoDB', 'Express.js', 'Nest.js', 'TypeScript', 'ES6', 'React.js and Redux', 'jQuery', 'MySQL', 'Ajax', 'Socket.IO', 'Redis', 'Python', 'FastAPI', 'Generative AI'], 'qualifications': ['MCA from Sikkim Manipal University (January, 2014)'], 'certifications': [], 'publications': [], 'projects': []}
-    # return {"resume_data": dummyJSON}
+    # mockJSON = {'name': 'John', 'email': 'john.test@gmail.com', 'phone': '+91240343093', 'experience': 'Over 8+ years of experience with JavaScript, Node.js, MongoDB, Express.js, Nest.js, TypeScript, ES6, React.js and Redux, jQuery, MySQL, Ajax, Socket.IO, Redis. Experienced in developing large Application. Experienced in implementing Payment system using Stripe. Experienced in writing complex database queries.', 'skills': ['JavaScript', 'Node.js', 'MongoDB', 'Express.js', 'Nest.js', 'TypeScript', 'ES6', 'React.js and Redux', 'jQuery', 'MySQL', 'Ajax', 'Socket.IO', 'Redis', 'Python', 'FastAPI', 'Generative AI'], 'qualifications': ['MCA from Sikkim Manipal University (January, 2014)'], 'certifications': [], 'publications': [], 'projects': []}
+    # return {"resume_data": mockJSON}
     content = llm.invoke(prompt).content
     match = re.search(r"\{.*\}", content, re.DOTALL)
     if match:
@@ -52,8 +52,8 @@ def jd_node(state):
     Return the experience, required skills and required qualifications as JSON format like : {{ experience: 'x', skills: ['a', 'b', 'c'], qualifications: ['a', 'b'] }}
     if Not matched then return as empty JSON format like :  {{ experience: 'x', skills: [], qualifications: [] }}
     """
-    # dummyJSON = {'experience': '5 years', 'skills': ['JavaScript', 'Python', 'AI', 'Generative AI', 'MySQL'], 'qualifications': ['B.Tech', 'MCA']}
-    # return {"jd_summary": dummyJSON}
+    # mockJSON = {'experience': '5 years', 'skills': ['JavaScript', 'Python', 'AI', 'Generative AI', 'MySQL'], 'qualifications': ['B.Tech', 'MCA']}
+    # return {"jd_summary": mockJSON}
     summary = llm.invoke(prompt).content
     match = re.search(r"\{.*\}", summary, re.DOTALL)
     if match:
@@ -71,12 +71,50 @@ def jd_node(state):
 def compare_node(state):
     resume_data = state['resume_data']
     jd_summary = state['jd_summary']
-    score, matrix, explanation = compare_profile_to_jd(resume_data, jd_summary)
-    return {
-        "fit_score": score,
-        "comparison_matrix": matrix,
-        "explanation": explanation
-    }
+
+    prompt = f"""
+    Analyze resume data and job description requirements.\n
+    Resume Data: {resume_data}
+    Job Description:{jd_summary}\n
+    Return the data as JSON format like: {{
+        "fit_score": "Strong Fit, Moderate Fit, or Not a Fit",
+        "comparison_matrix": {{
+            "skills_matched": ["JavaScript", "Python"],
+            "experience": "Return the experience"
+        }},
+        "explanation": "Explanation of the decision"
+    }}
+    if Not matched then return as empty JSON format like : {{
+        "fit_score": "",
+        "comparison_matrix": {{
+            "skills_matched": [],
+            "experience": ""
+        }},
+        "explanation": ""
+    }}
+    """
+    # mockJSON = {
+    #     "fit_score": "Strong Fit",
+    #     "comparison_matrix": {
+    #         "skills_matched": ["JavaScript", "Python", "Generative AI", "MySQL"],
+    #         "experience": "Over 8+ years"
+    #     },
+    #     "explanation": "The candidate has over 8 years of experience, exceeding the required 5 years. They possess strong expertise in 4 out of 5 required skills (JavaScript, Python, Generative AI, MySQL) and meet the qualification requirement with an MCA. This makes them a strong fit for the position."
+    # }
+    # return mockJSON
+    comparison_content = llm.invoke(prompt).content
+    match = re.search(r"\{.*\}", comparison_content, re.DOTALL)
+    if match:
+        try:
+            comparison_data = json.loads(match.group())
+            print("comparison_data parsed JSON:", comparison_data)
+            return comparison_data
+        except json.JSONDecodeError as e:
+            print("comparison_data JSON decode error:", e)
+            return { "fit_score": "", "comparison_matrix": { "skills_matched": [], "experience": "" }, "explanation": "" }
+    else:
+        print("comparison_data No JSON object found in the response.")
+        return { "fit_score": "", "comparison_matrix": { "skills_matched": [], "experience": "" }, "explanation": "" }
 
 
 class AgentState(TypedDict):
@@ -123,5 +161,4 @@ async def run_agent(candidate_name, resume_file, job_description):
         "fit_score": result["fit_score"],
         "comparison_matrix": result["comparison_matrix"],
         "explanation": result["explanation"]
-        
     }
