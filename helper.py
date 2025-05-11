@@ -49,13 +49,3 @@ def extract_text_from_resume(file) -> str:
             os.remove(temp_path)
 
     return ""
-
-def compare_profile_to_jd(profile: dict, jd_summary: str) -> tuple:
-    skills_match = list(set(profile["skills"]).intersection(set(["Python", "ML", "FastAPI"])))
-    matrix = {
-        "skills_matched": skills_match,
-        "experience": profile["experience"],
-    }
-    score = "Strong Fit" if len(skills_match) >= 2 else "Moderate Fit"
-    explanation = f"Matched skills: {skills_match}. Based on experience and certifications, candidate is a {score}."
-    return score, matrix, explanation

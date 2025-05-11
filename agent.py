@@ -1,6 +1,6 @@
 from langgraph.graph import StateGraph, END
 from langchain_openai import ChatOpenAI
-from helper import extract_text_from_resume, search_candidate_web, compare_profile_to_jd
+from helper import extract_text_from_resume, search_candidate_web
 import os
 from dotenv import load_dotenv
 from typing import TypedDict, Any
