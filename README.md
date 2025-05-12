@@ -46,7 +46,7 @@ Open .env and update the values as needed (e.g., OPENAI_API_KEY, etc.).
 
 
 ### 5. Run the app
-uvicorn app.main:app --reload
+python run.py
 
 
 Access the app at: http://127.0.0.1:8000

@@ -12,9 +12,8 @@ def search_candidate_web(name: str) -> dict:
 def extract_text_from_resume(file) -> str:
     ext = os.path.splitext(file.filename)[1].lower()
     contents = file.file.read()
-    
+    temp_path = f"storage/temp{ext}"
     if ext == ".pdf":
-        temp_path = "temp.pdf"
         with open(temp_path, "wb") as f:
             f.write(contents)
         try:
@@ -24,7 +23,6 @@ def extract_text_from_resume(file) -> str:
             os.remove(temp_path)
     
     elif ext == ".docx":
-        temp_path = "temp.docx"
         with open(temp_path, "wb") as f:
             f.write(contents)
         try:
