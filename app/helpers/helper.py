@@ -9,22 +9,6 @@ def search_candidate_web(name: str) -> dict:
         "blog": f"https://medium.com/@{name.lower().replace(' ', '')}"
     }
 
-
-# def extract_text_from_resume(file) -> str:
-#     ext = os.path.splitext(file.filename)[1].lower()
-#     contents = file.file.read()
-#     if ext == ".pdf":
-#         with open("temp.pdf", "wb") as f:
-#             f.write(contents)
-#         with pdfplumber.open("temp.pdf") as pdf:
-#             return "\n".join(page.extract_text() for page in pdf.pages if page.extract_text())
-#     elif ext == ".docx":
-#         with open("temp.docx", "wb") as f:
-#             f.write(contents)
-#         return docx2txt.process("temp.docx")
-#     else:
-#         return ""
-
 def extract_text_from_resume(file) -> str:
     ext = os.path.splitext(file.filename)[1].lower()
     contents = file.file.read()

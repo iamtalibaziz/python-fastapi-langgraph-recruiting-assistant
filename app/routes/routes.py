@@ -1,10 +1,10 @@
-from fastapi import FastAPI, UploadFile, Form, File
+from fastapi import APIRouter, UploadFile, Form, File
 from fastapi.responses import JSONResponse
-from agent import run_agent
+from app.helpers.agent import run_agent
 
-app = FastAPI()
+router = APIRouter()
 
-@app.post("/evaluate_candidate")
+@router.post("/evaluate_candidate")
 async def evaluate_candidate(
     candidate_name: str = Form(...),
     resume_file: UploadFile = File(...),
